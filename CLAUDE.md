@@ -81,7 +81,7 @@ One helper in `app/scoping.py`. Every read goes through it, the dashboard includ
 | 1 | Scaffold, docker-compose, models, migration | done |
 | 2 | Seed script | done |
 | 3 | Auth: register, login, select-agency JWT | done |
-| 4 | `scoping.py`, projects / tasks / comments routers | |
+| 4 | `scoping.py`, projects / tasks / comments routers | done |
 | 5 | Time entries, attachments, dashboard endpoints | |
 | 6 | The ten tests | |
 | 7 | Four React screens | |
