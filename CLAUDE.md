@@ -84,8 +84,8 @@ One helper in `app/scoping.py`. Every read goes through it, the dashboard includ
 | 4 | `scoping.py`, projects / tasks / comments routers | done |
 | 5 | Time entries, attachments, dashboard, invites | done |
 | 6 | The ten tests | done |
-| 7 | Four React screens | |
-| 8 | DESIGN.md, README, video | |
+| 7 | Four React screens | done |
+| 8 | DESIGN.md, README, video | docs done, video pending |
 
 If behind, cut from box 7 first, then box 5. Never from 6 or 8.
 

@@ -162,6 +162,7 @@ class CommentOut(ORMOut):
     id: uuid.UUID
     task_id: uuid.UUID
     author_id: uuid.UUID
+    author_name: str
     body: str
     visibility: Visibility
     created_at: datetime

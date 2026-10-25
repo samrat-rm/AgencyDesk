@@ -9,18 +9,36 @@ from sqlalchemy.orm import Session
 
 from app.auth import Ctx, get_ctx
 from app.db import get_db
-from app.models import Comment, Task, Visibility
+from app.models import Comment, Task, User, Visibility
 from app.schemas import CommentCreate, CommentOut
 from app.scoping import get_or_404, scoped_comments, scoped_tasks
 
 router = APIRouter(prefix="/tasks/{task_id}/comments", tags=["comments"])
 
 
+def _out(comment: Comment, author_name: str) -> CommentOut:
+    return CommentOut(
+        id=comment.id,
+        task_id=comment.task_id,
+        author_id=comment.author_id,
+        author_name=author_name,
+        body=comment.body,
+        visibility=comment.visibility,
+        created_at=comment.created_at,
+    )
+
+
 @router.get("", response_model=list[CommentOut])
 def list_comments(task_id: uuid.UUID, ctx: Ctx = Depends(get_ctx), db: Session = Depends(get_db)):
     get_or_404(db, scoped_tasks(ctx), Task, task_id)  # can't list comments of a hidden task
-    query = scoped_comments(ctx).where(Comment.task_id == task_id)
-    return db.scalars(query.order_by(Comment.created_at)).all()
+    query = (
+        scoped_comments(ctx)
+        .where(Comment.task_id == task_id)
+        .add_columns(User.full_name)  # author's name, for display
+        .join(User, User.id == Comment.author_id)
+        .order_by(Comment.created_at)
+    )
+    return [_out(comment, name) for comment, name in db.execute(query)]
 
 
 @router.post("", response_model=CommentOut, status_code=201)
@@ -42,4 +60,4 @@ def create_comment(
     )
     db.add(comment)
     db.commit()
-    return comment
+    return _out(comment, db.get(User, ctx.user_id).full_name)
