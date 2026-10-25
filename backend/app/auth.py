@@ -160,3 +160,10 @@ def require_admin(ctx: Ctx = Depends(get_ctx)) -> Ctx:
     if not ctx.is_admin:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Agency admins only")
     return ctx
+
+
+def require_client(ctx: Ctx = Depends(get_ctx)) -> Ctx:
+    """Client users only. Used for approving files: staff can't approve on a client's behalf."""
+    if not ctx.is_client:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Client users only")
+    return ctx

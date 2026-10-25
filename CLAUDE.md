@@ -82,7 +82,7 @@ One helper in `app/scoping.py`. Every read goes through it, the dashboard includ
 | 2 | Seed script | done |
 | 3 | Auth: register, login, select-agency JWT | done |
 | 4 | `scoping.py`, projects / tasks / comments routers | done |
-| 5 | Time entries, attachments, dashboard endpoints | |
+| 5 | Time entries, attachments, dashboard, invites | done |
 | 6 | The ten tests | |
 | 7 | Four React screens | |
 | 8 | DESIGN.md, README, video | |

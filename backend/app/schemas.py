@@ -6,7 +6,9 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models import Role, TaskPriority, TaskStatus, Visibility
+from typing import Literal
+
+from app.models import ApprovalStatus, InviteStatus, Role, TaskPriority, TaskStatus, Visibility
 
 
 def _normalise_email(value: str) -> str:
@@ -169,3 +171,90 @@ class CommentCreate(BaseModel):
     body: str = Field(min_length=1, max_length=10_000)
     # Staff choose; for clients the server overrides this to 'client'.
     visibility: Visibility = Visibility.internal
+
+
+# ---------------------------------------------------------------- invites
+
+
+class InviteCreate(BaseModel):
+    email: str
+    role: Role
+    client_id: uuid.UUID | None = None  # required for client_user, forbidden otherwise
+
+    _email = field_validator("email")(_normalise_email)
+
+
+class InviteOut(ORMOut):
+    id: uuid.UUID
+    email: str
+    role: Role
+    client_id: uuid.UUID | None
+    status: InviteStatus
+    created_at: datetime
+
+
+class InviteCreatedOut(BaseModel):
+    invite: InviteOut
+    # In production this token would only be emailed. It's returned here so the
+    # accept flow can be exercised without an email service.
+    token: str
+    resent: bool
+
+
+class InviteAccept(BaseModel):
+    token: str
+    # Needed only when this email has no account yet.
+    full_name: str | None = Field(default=None, min_length=1, max_length=200)
+    password: str | None = Field(default=None, min_length=8, max_length=72)
+
+
+# ---------------------------------------------------------------- time entries
+
+
+class TimeEntryCreate(BaseModel):
+    task_id: uuid.UUID
+    minutes: int = Field(gt=0, le=1440)  # same range as the DB CHECK
+    note: str = Field(default="", max_length=2000)
+    entry_date: date | None = None  # defaults to today
+
+
+class TimeEntryOut(ORMOut):
+    id: uuid.UUID
+    task_id: uuid.UUID
+    user_id: uuid.UUID
+    minutes: int
+    note: str
+    entry_date: date
+    created_at: datetime
+
+
+# ---------------------------------------------------------------- attachments
+
+
+class AttachmentOut(ORMOut):
+    id: uuid.UUID
+    task_id: uuid.UUID
+    uploaded_by_id: uuid.UUID
+    filename: str
+    content_type: str
+    size_bytes: int
+    visibility: Visibility
+    approval_status: ApprovalStatus
+    reviewed_by_id: uuid.UUID | None
+    reviewed_at: datetime | None
+    created_at: datetime
+
+
+class ReviewIn(BaseModel):
+    decision: Literal["approved", "changes_requested"]
+
+
+# ---------------------------------------------------------------- dashboard
+
+
+class DashboardOut(BaseModel):
+    project_id: uuid.UUID | None  # None = everything visible to the caller
+    total_tasks: int
+    tasks_by_status: dict[TaskStatus, int]
+    overdue_tasks: int
+    hours_logged: float

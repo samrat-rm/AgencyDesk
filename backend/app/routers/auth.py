@@ -40,7 +40,7 @@ from app.schemas import (
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-def _memberships_for(db: Session, user_id: uuid.UUID, agency_id: uuid.UUID | None = None):
+def memberships_for(db: Session, user_id: uuid.UUID, agency_id: uuid.UUID | None = None):
     """Active memberships for a user, joined with agency and client names."""
     q = (
         select(Membership, Agency.name, Client.name)
@@ -88,7 +88,7 @@ def register(body: RegisterIn, db: Session = Depends(get_db)):
 
     return AccessTokenOut(
         access_token=make_access_token(user.id, agency.id),
-        membership=_memberships_for(db, user.id, agency.id)[0],
+        membership=memberships_for(db, user.id, agency.id)[0],
     )
 
 
@@ -101,7 +101,7 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
 
     return LoginOut(
         login_token=make_login_token(user.id),
-        memberships=_memberships_for(db, user.id),
+        memberships=memberships_for(db, user.id),
     )
 
 
@@ -111,7 +111,7 @@ def select_agency(
     user_id: uuid.UUID = Depends(get_user_id_from_any_token),
     db: Session = Depends(get_db),
 ):
-    found = _memberships_for(db, user_id, body.agency_id)
+    found = memberships_for(db, user_id, body.agency_id)
     if not found:
         # 404, not 403: don't confirm that an agency with this id exists.
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No membership in that agency")
@@ -129,5 +129,5 @@ def me(ctx: Ctx = Depends(get_ctx), db: Session = Depends(get_db)):
         user_id=user.id,
         email=user.email,
         full_name=user.full_name,
-        membership=_memberships_for(db, ctx.user_id, ctx.agency_id)[0],
+        membership=memberships_for(db, ctx.user_id, ctx.agency_id)[0],
     )

@@ -26,6 +26,7 @@ from sqlalchemy import text
 
 from app.auth import hash_password
 from app.db import SessionLocal
+from app.storage import UPLOAD_ROOT
 from app.models import (
     Agency,
     Attachment,
@@ -45,7 +46,7 @@ from app.models import (
 )
 
 PASSWORD = "password123"
-UPLOAD_ROOT = Path(__file__).resolve().parent.parent / "uploads"
+
 DEMO_INVITE_TOKEN = "demo-invite-token-harbor"
 
 C, I = Visibility.client, Visibility.internal
